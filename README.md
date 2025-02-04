@@ -1,4 +1,4 @@
-# MyFindr
+# myFindr
 
 A frontend for [OpenHaystack](https://github.com/seemoo-lab/openhaystack) / [Macless-Haystack](https://github.com/dchristl/macless-haystack)
 Features
