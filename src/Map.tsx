@@ -28,7 +28,6 @@ import { getHTMLColorFromArray, pluralize, timeSince } from './utils';
 
 const defaultMapZoom = 14;
 
-
 function ChangeView({ center }: { center: [number, number] }) {
   const map = useMap();
   map.flyTo(center);
@@ -62,8 +61,7 @@ function Map() {
   const devicesJSON = localStorage.getItem('devicesJSON') || '';
   const apiURL = localStorage.getItem('apiURL') || '';
 
-  const isMissingSettings =
-    username === '' || password === '' || devicesJSON === '' || apiURL === '';
+  const isMissingRequredSettings = devicesJSON === '' || apiURL === '';
 
   const init = useCallback(async () => {
     try {
@@ -145,10 +143,10 @@ function Map() {
   }, [reports, filterRange, filterReports]);
 
   useEffect(() => {
-    if (!isMissingSettings) {
+    if (!isMissingRequredSettings) {
       init();
     }
-  }, [isMissingSettings, init]);
+  }, [isMissingRequredSettings, init]);
 
   const handleFilterChanged = (_event: unknown, newValue: number | number[]) =>
     setFilterRange(Array.isArray(newValue) ? newValue : [newValue, newValue]);
@@ -160,7 +158,7 @@ function Map() {
 
   return (
     <>
-      {isMissingSettings ? (
+      {isMissingRequredSettings ? (
         <MissingSettings />
       ) : (
         <div
@@ -187,11 +185,7 @@ function Map() {
               disableSwap
             />
           )}
-          <MapContainer
-            center={currentPosition}
-            zoom={defaultMapZoom}
-          
-          >
+          <MapContainer center={currentPosition} zoom={defaultMapZoom}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
