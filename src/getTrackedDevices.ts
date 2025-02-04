@@ -108,10 +108,12 @@ async function fetchDevicesReports(
     headers.Authorization = 'Basic ' + btoa(`${username}:${password}`);
   }
 
+  const isDemo = apiURL.includes('sample.json');
+
   const response = await fetch(apiURL, {
-    method: 'POST',
+    method: isDemo ? 'GET' : 'POST',
     headers,
-    body: JSON.stringify({ ids: base64AdvertisementKey, days }),
+    body: isDemo ? null : JSON.stringify({ ids: base64AdvertisementKey, days }),
   });
 
   if (!response.ok) {
