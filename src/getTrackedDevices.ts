@@ -100,21 +100,29 @@ async function fetchDevicesReports(
   username: string,
   password: string
 ): Promise<Report[]> {
+
+
+  const isDemo = apiURL.includes('sample.json');
+  const isBasicAuth = username !== '' && password !== '';
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
-
-  if (username !== '' && password !== '') {
+  if (isBasicAuth) {
     headers.Authorization = 'Basic ' + btoa(`${username}:${password}`);
   }
 
-  const isDemo = apiURL.includes('sample.json');
-
-  const response = await fetch(apiURL, {
+  const options: RequestInit = {
     method: isDemo ? 'GET' : 'POST',
     headers,
     body: isDemo ? null : JSON.stringify({ ids: base64AdvertisementKey, days }),
-  });
+  };
+
+  if (isBasicAuth) {
+    options.credentials = 'include';
+  }
+
+  const response = await fetch(apiURL, options);
 
   if (!response.ok) {
     throw new Error('Network response was not ok');
