@@ -5,7 +5,8 @@ Features
 - Filtering
 - Shareing
 - Uses same config as Openhaystack
-  
+
+Demo:
 https://sonictruth.github.io/my-findr/
 
 
