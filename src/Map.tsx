@@ -1,5 +1,6 @@
 import './Map.css';
 import 'leaflet/dist/leaflet.css';
+import { mapIcon } from './mapIcon';
 
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -214,6 +215,8 @@ function Map() {
 
               return isLastReport ? (
                 <Marker
+                  icon={mapIcon}
+                  interactive={true}
                   key={'last-report-' + reportIndex}
                   position={[location.latitude, location.longitude]}
                 >
