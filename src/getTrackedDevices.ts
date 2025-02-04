@@ -119,7 +119,7 @@ async function fetchDevicesReports(
   };
 
   if (isBasicAuth) {
-    options.credentials = 'include';
+    // options.credentials = 'include';
   }
 
   const response = await fetch(apiURL, options);
