@@ -15,6 +15,7 @@ import Layout from './Layout.tsx';
 import App from './App.tsx';
 import Settings from './Settings.tsx';
 import Map from './Map.tsx';
+import './main.css';
 
 import { SnackbarProvider } from 'notistack';
 

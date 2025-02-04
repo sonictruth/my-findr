@@ -16,30 +16,22 @@ export const getHTMLColorFromArray = (
   return '#' + hex;
 };
 
-export function timeSince(date: Date) {
+export function timeSince(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  const intervals = [
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 },
+  ];
 
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  
-    let interval = seconds / 31536000;
-  
-    if (interval > 1) {
-      return Math.floor(interval) + " years";
+  for (const interval of intervals) {
+    const count = Math.floor(seconds / interval.seconds);
+    if (count >= 1) {
+      return `${count} ${interval.label}${count !== 1 ? 's' : ''}`;
     }
-    interval = seconds / 2592000;
-    if (interval > 1) {
-      return Math.floor(interval) + " months";
-    }
-    interval = seconds / 86400;
-    if (interval > 1) {
-      return Math.floor(interval) + " days";
-    }
-    interval = seconds / 3600;
-    if (interval > 1) {
-      return Math.floor(interval) + " hours";
-    }
-    interval = seconds / 60;
-    if (interval > 1) {
-      return Math.floor(interval) + " minutes";
-    }
-    return Math.floor(seconds) + " seconds";
   }
+
+  return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+}

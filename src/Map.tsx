@@ -28,11 +28,8 @@ import { getHTMLColorFromArray, pluralize, timeSince } from './utils';
 
 const defaultMapZoom = 14;
 
-function ChangeView({
-  center,
-}: {
-  center: [number, number]
-}) {
+
+function ChangeView({ center }: { center: [number, number] }) {
   const map = useMap();
   map.flyTo(center);
   return null;
@@ -193,7 +190,7 @@ function Map() {
           <MapContainer
             center={currentPosition}
             zoom={defaultMapZoom}
-            maxZoom={90}
+          
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -256,7 +253,7 @@ function Map() {
               }}
               positions={polyline}
             />
-            <ChangeView center={currentPosition}/>
+            <ChangeView center={currentPosition} />
           </MapContainer>
         </div>
       )}

@@ -2,8 +2,6 @@ import L from 'leaflet';
 import icon from  './assets/marker-icon.png?inline'
 import iconShadow from './assets/marker-shadow.png?inline'
 
-console.log(icon, iconShadow);
-
 const mapIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,

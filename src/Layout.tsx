@@ -3,7 +3,7 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 
 export default function Layout() {
   return (
-    <DashboardLayout defaultSidebarCollapsed={true}>
+    <DashboardLayout sx={{height:'100% !important'}} defaultSidebarCollapsed={true}>
       <Outlet />
     </DashboardLayout>
   );
