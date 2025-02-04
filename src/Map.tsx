@@ -152,7 +152,7 @@ function Map() {
     }
   }, [isMissingSettings, init]);
 
-  const handleFilterChanged = (event: unknown, newValue: number | number[]) =>
+  const handleFilterChanged = (_event: unknown, newValue: number | number[]) =>
     setFilterRange(Array.isArray(newValue) ? newValue : [newValue, newValue]);
 
   const getSliderLabel = (reportIndex: number) =>
