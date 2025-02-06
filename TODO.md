@@ -1,0 +1,8 @@
+- Add days options (maybe to Device Panel)
+- Show Last Seen on Device Panel
+- Device Box collapsible
+- Show battery status
+- Show better response messages for example bad auth
+- Export to KML/KMZ
+- Date filter should be vertical on mobile
+- Device JSON editor
