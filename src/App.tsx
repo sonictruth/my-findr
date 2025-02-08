@@ -10,7 +10,7 @@ import {
 
 const BRANDING: Branding = {
   logo: <img width={40} src='./favicon.png' alt='Logo' />,
-  title: 'myFindr',
+  title: 'AppleFindMy',
 };
 
 const NAVIGATION: Navigation = [
