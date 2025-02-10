@@ -39,7 +39,7 @@ function Map() {
   const { enqueueSnackbar } = useSnackbar();
   const isDarkTheme = theme.palette.mode === 'dark';
   const [currentPosition, setCurrentPosition] = useState<[number, number]>([
-    51.505, -0.09,
+    21.027754, 105.834159
   ]);
 
   const [filterRange, setFilterRange] = useState<number[]>([0, 0]);
