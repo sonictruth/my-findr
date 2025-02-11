@@ -6,7 +6,7 @@
   "homepage": "https://sonictruth.github.io/my-findr",
   "scripts": {
     "predeploy": "npm run build",
-     "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -18,20 +18,21 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.1",
-    "@mui/icons-material": "^6.4.2",
+    "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.2",
     "@mui/styled-engine": "^6.4.2",
     "@mui/styled-engine-sc": "^6.4.2",
     "@toolpad/core": "^0.12.0",
     "elliptic": "^6.6.1",
     "leaflet": "^1.9.4",
-    "lodash": "^4.17.21",
     "notistack": "^3.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.1.5",
-    "styled-components": "^6.1.14"
+    "styled-components": "^6.1.14",
+    "usehooks-ts": "^3.1.1",
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

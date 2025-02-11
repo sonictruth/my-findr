@@ -3,18 +3,6 @@ import { ec as EC } from 'elliptic';
 type KeyPair = EC.KeyPair;
 const curve = new EC('p224');
 
-export interface DecryptedPayload {
-  date: Date;
-  confidence: number;
-  location: Location;
-}
-
-export interface Location {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-}
-
 async function sha256(arrayBuffer: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest('SHA-256', arrayBuffer));
 }
@@ -131,7 +119,7 @@ function decodeSeenTime(payloadByteArray: Uint8Array): Date {
   return new Date(Date.UTC(2001, 0, 1) + seenTimeStamp * 1000);
 }
 
-function decodeLocation(payloadArrayBuffer: Uint8Array): Location {
+function decodeLocation(payloadArrayBuffer: Uint8Array): DeviceLocation {
   const latitude = readUInt32BE(payloadArrayBuffer, 0) / 10000000.0;
   const longitude = readUInt32BE(payloadArrayBuffer, 4) / 10000000.0;
   const accuracy = payloadArrayBuffer[8];

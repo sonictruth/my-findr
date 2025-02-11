@@ -1,30 +1,28 @@
 import './Map.css';
 import 'leaflet/dist/leaflet.css';
 import { mapIcon } from './mapIcon';
-
-import { useCallback, useEffect, useState } from 'react';
+import DownloadIcon from '@mui/icons-material/Download';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   CircleMarker,
   MapContainer,
   Marker,
   Polyline,
+  Popup,
   TileLayer,
   Tooltip,
   useMap,
 } from 'react-leaflet';
-
-import {
-  Device,
-  getDevices,
-  getReportsForDevice,
-  Report,
-} from './getTrackedDevices';
+import { getReportsForDevice } from './getReportsForDevice';
 import MissingSettings from './MissingSettings';
-import { Slider, useTheme } from '@mui/material';
+import { Tooltip as MuiTooltip, Fab, Slider, useTheme } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import Loading from './Loading';
 import DevicesPanel from './DevicesPanel';
-import { getHTMLColorFromArray, pluralize, timeSince } from './utils';
+import { pluralize, timeSince } from './utils';
+import { useSettings } from './useSettings';
+import { LatLngTuple } from 'leaflet';
+import { exportKML } from './exportKML';
 
 const defaultMapZoom = 14;
 
@@ -44,117 +42,105 @@ function Map() {
 
   const [filterRange, setFilterRange] = useState<number[]>([0, 0]);
 
-  const [devices, setDevices] = useState<Device[]>([]);
-
   const [currentDevice, setCurrentDevice] = useState<Device>();
 
-  const [reports, setReports] = useState<Report[]>([]);
-
-  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
-
-  const [polyline, setPolyline] = useState<[number, number][]>([]);
+  const [reports, setReports] = useState<DeviceReport[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const username = localStorage.getItem('username') || '';
-  const password = localStorage.getItem('password') || '';
-  const devicesJSON = localStorage.getItem('devicesJSON') || '';
-  const apiURL = localStorage.getItem('apiURL') || '';
+  const [settings] = useSettings();
 
-  const isMissingRequredSettings = devicesJSON === '' || apiURL === '';
+  const isMissingRequredSettings = useMemo(
+    () => settings.apiURL === '' || settings.devices.length === 0,
+    [settings.apiURL, settings.devices.length]
+  );
 
-  const init = useCallback(async () => {
-    try {
-      const devices = await getDevices(devicesJSON);
-      setDevices(devices);
-      console.log('Devices:', devices);
-      const numberOfDevices = pluralize(devices.length, 'device');
-      enqueueSnackbar(`Found ${numberOfDevices} configured`);
-    } catch (error) {
-      enqueueSnackbar('Error getting devices, check JSON !', {
-        variant: 'error',
-      });
-      console.error('Failed to fetch data:', error);
-    }
-  }, [devicesJSON, enqueueSnackbar]);
+  const memoizedDevices = useMemo(() => settings.devices, [settings.devices]);
 
-  const onDeviceChoosen = async (device: Device) => {
-    setIsLoading(true);
+  const onDeviceChoosen = useCallback(
+    async (device: Device) => {
+      setIsLoading(true);
+      try {
+        const newReports = await getReportsForDevice(
+          device,
+          settings.apiURL,
+          settings.username,
+          settings.password,
+          settings.days
+        );
 
-    try {
-      const newReports = await getReportsForDevice(
-        device,
-        apiURL,
-        username,
-        password
-      );
+        if (newReports.length === 0) {
+          throw new Error('No reports found');
+        }
 
-      if (newReports.length === 0) {
-        throw new Error('No reports found');
+        setReports(newReports);
+        setCurrentDevice(device);
+
+        setFilterRange([1, newReports.length]);
+
+        const numberOfReports = pluralize(newReports.length, 'Report');
+        enqueueSnackbar(`${numberOfReports} loaded`, { variant: 'success' });
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        enqueueSnackbar((error as Error).message || 'Error', {
+          variant: 'error',
+        });
       }
+      setIsLoading(false);
+    },
+    [
+      enqueueSnackbar,
+      settings.apiURL,
+      settings.username,
+      settings.password,
+      settings.days,
+    ]
+  );
 
-      setReports(newReports);
-      setCurrentDevice(device);
-
-      setFilterRange([1, newReports.length]);
-
-      const numberOfReports = pluralize(newReports.length, 'Report');
-      enqueueSnackbar(`${numberOfReports} loaded`, { variant: 'success' });
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      enqueueSnackbar('Error getting device reports', {
-        variant: 'error',
-      });
-    }
-    setIsLoading(false);
-  };
-
-  const filterReports = useCallback(() => {
+  const filteredReports = useMemo(() => {
     if (reports.length > 0) {
-      const newFilteredReports = reports.slice(
-        filterRange[0] - 1,
-        filterRange[1] - 1
-      );
-
-      if (newFilteredReports.length === 0) {
-        return;
-      }
-
-      const devicePolyline: [number, number][] = newFilteredReports.map(
-        (report) => [
-          report.decrypedPayload.location.latitude,
-          report.decrypedPayload.location.longitude,
-        ]
-      );
-
-      const lastReport = newFilteredReports[newFilteredReports.length - 1];
-      const lastLocation = lastReport.decrypedPayload.location;
-      setCurrentPosition([lastLocation.latitude, lastLocation.longitude]);
-      setPolyline(devicePolyline);
-      setFilteredReports(newFilteredReports);
-    } else {
-      setFilteredReports([]);
-      setPolyline([]);
+      return reports.slice(filterRange[0] - 1, filterRange[1] - 1);
     }
+    return [];
   }, [filterRange, reports]);
 
+  const polyline = useMemo<LatLngTuple[]>(() => {
+    return filteredReports.map(
+      (report) =>
+        [
+          report.decrypedPayload.location.latitude,
+          report.decrypedPayload.location.longitude,
+        ] as LatLngTuple
+    );
+  }, [filteredReports]);
+
   useEffect(() => {
-    filterReports();
-  }, [reports, filterRange, filterReports]);
+    if (filteredReports.length > 0) {
+      const lastReport = filteredReports[filteredReports.length - 1];
+      const lastLocation = lastReport.decrypedPayload.location;
+      setCurrentPosition([lastLocation.latitude, lastLocation.longitude]);
+    }
+  }, [filteredReports]);
 
   useEffect(() => {
     if (!isMissingRequredSettings) {
-      init();
+      console.log('Devices:', memoizedDevices);
     }
-  }, [isMissingRequredSettings, init]);
+  }, [memoizedDevices, isMissingRequredSettings, enqueueSnackbar]);
 
-  const handleFilterChanged = (_event: unknown, newValue: number | number[]) =>
-    setFilterRange(Array.isArray(newValue) ? newValue : [newValue, newValue]);
+  const handleFilterChanged = useCallback(
+    (_event: unknown, newValue: number | number[]) =>
+      setFilterRange(Array.isArray(newValue) ? newValue : [newValue, newValue]),
+    []
+  );
 
-  const getSliderLabel = (reportIndex: number) =>
-    `${reports[reportIndex - 1].decrypedPayload.date.toLocaleTimeString()} 
+  const getSliderLabel = useCallback(
+    (reportIndex: number) =>
+      `${reports[reportIndex - 1].decrypedPayload.date.toLocaleTimeString()} 
   ${reports[reportIndex - 1].decrypedPayload.date.toLocaleDateString()}
-  `;
+  `,
+    [reports]
+  );
 
   return (
     <>
@@ -166,24 +152,45 @@ function Map() {
           style={{ height: '100%', position: 'relative', overflow: 'hidden' }}
         >
           <Loading isLoading={isLoading} />
-          <DevicesPanel devices={devices} onDeviceChoosen={onDeviceChoosen} />
+          <DevicesPanel
+            devices={memoizedDevices}
+            onDeviceChoosen={onDeviceChoosen}
+          />
           {reports.length > 1 && (
-            <Slider
-              sx={{
-                position: 'absolute',
-                bottom: 20,
-                left: 20,
-                width: 'calc(100% - 50px)',
-                zIndex: 1000,
-              }}
-              onChange={handleFilterChanged}
-              valueLabelFormat={getSliderLabel}
-              value={filterRange}
-              max={reports.length}
-              min={1}
-              valueLabelDisplay='auto'
-              disableSwap
-            />
+            <>
+              <Fab
+                size='small'
+                sx={{
+                  zIndex: 999,
+                  position: 'absolute',
+                  bottom: 80,
+                  right: 20,
+                }}
+                color='primary'
+                onClick={() => exportKML(filteredReports)}
+              >
+                <MuiTooltip placement='top' title='Export KML'>
+                  <DownloadIcon />
+                </MuiTooltip>
+              </Fab>
+
+              <Slider
+                sx={{
+                  position: 'absolute',
+                  bottom: 20,
+                  left: 20,
+                  width: 'calc(100% - 50px)',
+                  zIndex: 1000,
+                }}
+                onChange={handleFilterChanged}
+                valueLabelFormat={getSliderLabel}
+                value={filterRange}
+                max={reports.length}
+                min={1}
+                valueLabelDisplay='auto'
+                disableSwap
+              />
+            </>
           )}
           <MapContainer center={currentPosition} zoom={defaultMapZoom}>
             <TileLayer
@@ -192,9 +199,7 @@ function Map() {
             />
 
             {filteredReports.map((report, reportIndex) => {
-              const color = getHTMLColorFromArray(
-                currentDevice?.colorComponents
-              );
+              const color = currentDevice?.hexColor;
               const isLastReport = reportIndex === filteredReports.length - 1;
               const payload = report.decrypedPayload;
               const location = payload.location;
@@ -212,10 +217,9 @@ function Map() {
                   position={[location.latitude, location.longitude]}
                 >
                   <Tooltip>
-                    {currentDevice?.name} <br />
-                    Last seen: {timeSince(payload.date)} ago
-                    <br />
-                    Date: {payload.date.toLocaleDateString()} <br />
+                    Last seen {timeSince(payload.date)} ago <br />
+                    Date:
+                    {payload.date.toLocaleDateString()} <br />
                     Time: {payload.date.toLocaleTimeString()} <br />
                     Accuracy: {location.accuracy}
                   </Tooltip>
@@ -228,7 +232,6 @@ function Map() {
                   radius={radius}
                 >
                   <Tooltip>
-                    {currentDevice?.name} <br />
                     Date: {payload.date.toLocaleDateString()} <br />
                     Time: {payload.date.toLocaleTimeString()} <br />
                     Accuracy: {location.accuracy}
@@ -243,7 +246,7 @@ function Map() {
                 dashArray: '5, 5',
                 dashOffset: '5',
                 weight: 1,
-                color: getHTMLColorFromArray(currentDevice?.colorComponents),
+                color: currentDevice?.hexColor,
               }}
               positions={polyline}
             />

@@ -6,6 +6,6 @@ const mapIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
     iconAnchor: [12, 41],
-    tooltipAnchor: [12, -41],
+    tooltipAnchor: [12, 0],
 });
 export { mapIcon };
