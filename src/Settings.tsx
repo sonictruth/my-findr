@@ -100,6 +100,33 @@ function Settings() {
     [enqueueSnackbar]
   );
 
+  const validateSettings = useCallback(
+    (settings: AppSettings) => {
+      if (settings.devices.length === 0) {
+        enqueueSnackbar('At least one device is required', {
+          variant: 'error',
+        });
+        return false;
+      }
+
+      if (!settings.apiURL) {
+        enqueueSnackbar('API URL cannot be empty', { variant: 'error' });
+        return false;
+      }
+
+      return true;
+    },
+    [enqueueSnackbar]
+  );
+
+  const saveSettings = useCallback(() => {
+    if (!validateSettings(settingsForm)) {
+      return;
+    }
+    updateStoredSettings(settingsForm);
+    enqueueSnackbar('Settings saved!', { variant: 'success' });
+  }, [enqueueSnackbar, settingsForm, updateStoredSettings, validateSettings]);
+
   const updateDevice = useCallback(
     async (device: Device) => {
       if (!(await validateDevice(device))) {
@@ -109,15 +136,15 @@ function Settings() {
         const updatedDevices = prevSettings.devices.map((d) =>
           d.id === device.id ? device : d
         );
+        updateStoredSettings({ ...prevSettings, devices: updatedDevices });
         return {
           ...prevSettings,
           devices: updatedDevices,
         };
       });
       setDeviceEditForm(defaultNewDevice);
-      enqueueSnackbar('Device updated !', { variant: 'success' });
     },
-    [enqueueSnackbar, validateDevice]
+    [validateDevice, updateStoredSettings]
   );
 
   const addDevice = useCallback(
@@ -128,30 +155,20 @@ function Settings() {
 
       device.id = uuidv4();
 
-      setSettingsForm({
-        ...settingsForm,
-        devices: [...settingsForm.devices, device],
+      setSettingsForm((prevSettings) => {
+        const updatedDevices = prevSettings.devices.concat(device);
+        updateStoredSettings({ ...prevSettings, devices: updatedDevices });
+        return {
+          ...prevSettings,
+          devices: updatedDevices,
+        };
       });
+
       enqueueSnackbar('Device added !', { variant: 'success' });
       setDeviceEditForm(defaultNewDevice);
     },
-    [enqueueSnackbar, settingsForm, validateDevice]
+    [validateDevice, enqueueSnackbar, updateStoredSettings]
   );
-
-  const saveSettings = useCallback(() => {
-    if (settingsForm.devices.length === 0) {
-      enqueueSnackbar('At least one device is required', { variant: 'error' });
-      return;
-    }
-
-    if (!settingsForm.apiURL) {
-      enqueueSnackbar('API URL cannot be empty', { variant: 'error' });
-      return;
-    }
-
-    updateStoredSettings(settingsForm);
-    enqueueSnackbar('Settings saved!', { variant: 'success' });
-  }, [enqueueSnackbar, settingsForm, updateStoredSettings]);
 
   const clearSettings = useCallback(() => {
     deleteStoredSettings();
@@ -184,7 +201,6 @@ function Settings() {
     [setDeviceEditForm]
   );
 
-
   const hasLoadedSettings = useRef(false);
 
   useEffect(() => {
@@ -192,7 +208,7 @@ function Settings() {
       try {
         const urlSettings = JSON.parse(atob(params.savedSettings));
 
-        if (urlSettings && urlSettings.devices && urlSettings.apiURL) {
+        if (validateSettings(urlSettings)) {
           updateStoredSettings(urlSettings);
           setSettingsForm(urlSettings);
           navigate('/map');
@@ -200,7 +216,7 @@ function Settings() {
         } else {
           throw new Error('Invalid settings data');
         }
-        
+
         enqueueSnackbar('Settings loaded from URL!', { variant: 'success' });
       } catch (error) {
         navigate('/settings');
@@ -210,7 +226,13 @@ function Settings() {
         });
       }
     }
-  }, [enqueueSnackbar, navigate, params.savedSettings, updateStoredSettings]);
+  }, [
+    enqueueSnackbar,
+    navigate,
+    params.savedSettings,
+    updateStoredSettings,
+    validateSettings,
+  ]);
 
   return (
     <PageContainer breadcrumbs={[]}>
