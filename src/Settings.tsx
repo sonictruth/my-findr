@@ -206,7 +206,7 @@ function Settings() {
         });
       }
     }
-  }, [enqueueSnackbar, params.savedSettings, updateStoredSettings]);
+  }, [enqueueSnackbar, navigate, params.savedSettings, updateStoredSettings]);
 
   return (
     <PageContainer breadcrumbs={[]}>
