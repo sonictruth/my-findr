@@ -192,12 +192,15 @@ function Settings() {
       try {
         const urlSettings = JSON.parse(atob(params.savedSettings));
 
-        updateStoredSettings(urlSettings);
-        setSettingsForm(urlSettings);
-        navigate('/map');
-        hasLoadedSettings.current = true;
-
-
+        if (urlSettings && urlSettings.devices && urlSettings.apiURL) {
+          updateStoredSettings(urlSettings);
+          setSettingsForm(urlSettings);
+          navigate('/map');
+          hasLoadedSettings.current = true;
+        } else {
+          throw new Error('Invalid settings data');
+        }
+        
         enqueueSnackbar('Settings loaded from URL!', { variant: 'success' });
       } catch (error) {
         console.error('Failed to load settings from URL:', error);
