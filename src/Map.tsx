@@ -8,7 +8,6 @@ import {
   MapContainer,
   Marker,
   Polyline,
-  Popup,
   TileLayer,
   Tooltip,
   useMap,
