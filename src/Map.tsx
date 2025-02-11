@@ -73,6 +73,10 @@ function Map() {
         }
 
         setReports(newReports);
+
+        device.lastSeen =
+          newReports[newReports.length - 1].decrypedPayload.date;
+
         setCurrentDevice(device);
 
         setFilterRange([1, newReports.length]);
@@ -98,7 +102,7 @@ function Map() {
 
   const filteredReports = useMemo(() => {
     if (reports.length > 0) {
-      return reports.slice(filterRange[0] - 1, filterRange[1] - 1);
+      return reports.slice(filterRange[0] - 1, filterRange[1] );
     }
     return [];
   }, [filterRange, reports]);
@@ -154,6 +158,7 @@ function Map() {
           <DevicesPanel
             devices={memoizedDevices}
             onDeviceChoosen={onDeviceChoosen}
+            currentDevice={currentDevice}
           />
           {reports.length > 1 && (
             <>
@@ -198,6 +203,8 @@ function Map() {
             />
 
             {filteredReports.map((report, reportIndex) => {
+
+
               const color = currentDevice?.hexColor;
               const isLastReport = reportIndex === filteredReports.length - 1;
               const payload = report.decrypedPayload;

@@ -50,6 +50,7 @@ const defaultNewDevice: Device = {
   advertismentKey: '',
   icon: materialIcons[0],
   hexColor: '#00FF00',
+  lastSeen: null,
 };
 
 function Settings() {
@@ -198,7 +199,7 @@ function Settings() {
       enqueueSnackbar('Device removed!', { variant: 'success' });
       updateStoredSettings(settingsForm);
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar, settingsForm, updateStoredSettings]
   );
 
   const editDevice = useCallback(

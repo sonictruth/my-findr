@@ -17,6 +17,7 @@ type Device = {
   advertismentKey: string;
   icon: string;
   hexColor: string;
+  lastSeen: Date | null;
 };
 
 type AppSettings = {

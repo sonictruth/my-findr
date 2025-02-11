@@ -15,26 +15,33 @@ import {
 } from '@mui/material';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { pluralize } from './utils';
+import { pluralize, timeSince } from './utils';
 
 interface DevicesPanelProps {
   devices: Device[];
   onDeviceChoosen: (device: Device) => void;
+  currentDevice: Device | undefined;
 }
-
 
 const DevicesPanel: FC<DevicesPanelProps> = ({
   devices,
   onDeviceChoosen,
+  currentDevice,
 }) => {
-
   const status = pluralize(devices.length, 'Device');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'), {
-    noSsr: true
+    noSsr: true,
   });
 
-  if (!devices ) {
+  const getSecondaryText = (device: Device) => {
+    if (currentDevice && device.id === currentDevice.id && device.lastSeen) {
+      return `Last seen ${timeSince(device.lastSeen)} ago`;
+    }
+    return '';
+  };
+
+  if (!devices) {
     return null;
   }
 
@@ -48,20 +55,16 @@ const DevicesPanel: FC<DevicesPanelProps> = ({
         zIndex: 'tooltip',
       })}
     >
-      <Accordion  defaultExpanded={isMobile ? false : true}>
-        <AccordionSummary 
-          expandIcon={<ExpandMoreIcon />}
-          sx={{ pt: 0, pb:0 }}
-        >
-         {status}
+      <Accordion defaultExpanded={isMobile ? false : true}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ pt: 0, pb: 0 }}>
+          {status}
         </AccordionSummary>
-        <AccordionDetails  >
+        <AccordionDetails>
           <List
             sx={{
               p: 0,
               m: 0,
-              width: '100%',
-              maxWidth: 260,
+              width: 220,
               position: 'relative',
               overflow: 'auto',
               maxHeight: 200,
@@ -70,9 +73,9 @@ const DevicesPanel: FC<DevicesPanelProps> = ({
             subheader={<li />}
           >
             <li>
-              <ul >
+              <ul>
                 {devices.map((device) => (
-                  <ListItem sx={{ p: 0, m:0 }} key={`item-${device.id}`}>
+                  <ListItem sx={{ p: 0, m: 0 }} key={`item-${device.id}`}>
                     <ListItemButton onClick={() => onDeviceChoosen(device)}>
                       <ListItemIcon sx={{ minWidth: 30 }}>
                         <Icon
@@ -80,12 +83,13 @@ const DevicesPanel: FC<DevicesPanelProps> = ({
                             color: device.hexColor,
                           }}
                         >
-                         {device.icon}
+                          {device.icon}
                         </Icon>
                       </ListItemIcon>
                       <ListItemText
                         id={`item-text-${device.id}`}
                         primary={`${device.name}`}
+                        secondary={getSecondaryText(device)}
                       />
                     </ListItemButton>
                   </ListItem>
