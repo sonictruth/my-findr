@@ -185,11 +185,18 @@ function Settings() {
 
   const removeDevice = useCallback(
     (device: Device) => {
-      setSettingsForm((prevSettings) => ({
-        ...prevSettings,
-        devices: prevSettings.devices.filter((d) => d.id !== device.id),
-      }));
+
+      setSettingsForm((prevSettings) => {
+        const updatedDevices = prevSettings.devices.filter((d) => d.id !== device.id)
+        updateStoredSettings({ ...prevSettings, devices: updatedDevices });
+        return {
+          ...prevSettings,
+          devices: updatedDevices,
+        };
+      });
+
       enqueueSnackbar('Device removed!', { variant: 'success' });
+      updateStoredSettings(settingsForm);
     },
     [enqueueSnackbar]
   );
