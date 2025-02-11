@@ -1,3 +1,4 @@
+- Decouple Settings and Devices
 - Show Last Seen on device Panel
 - Show battery status
 - Date filter should be vertical on mobile
