@@ -189,6 +189,8 @@ function Settings() {
       try {
         const urlSettings = JSON.parse(atob(params.savedSettings));
         setSettingsForm(urlSettings);
+        updateStoredSettings(urlSettings);
+        navigate('/map');
         enqueueSnackbar('Settings loaded from URL!', { variant: 'success' });
       } catch (error) {
         console.error('Failed to load settings from URL:', error);
@@ -197,7 +199,7 @@ function Settings() {
         });
       }
     }
-  }, [enqueueSnackbar, navigate, params.savedSettings, setSettingsForm]);
+  }, [enqueueSnackbar, navigate, params.savedSettings, setSettingsForm, updateStoredSettings]);
 
   return (
     <PageContainer breadcrumbs={[]}>
