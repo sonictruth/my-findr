@@ -203,6 +203,7 @@ function Settings() {
         
         enqueueSnackbar('Settings loaded from URL!', { variant: 'success' });
       } catch (error) {
+        navigate('/settings');
         console.error('Failed to load settings from URL:', error);
         enqueueSnackbar('Failed to load settings from URL', {
           variant: 'error',
