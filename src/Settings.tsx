@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Icon from '@mui/material/Icon';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pluralize } from './utils';
@@ -184,13 +184,20 @@ function Settings() {
     [setDeviceEditForm]
   );
 
+
+  const hasLoadedSettings = useRef(false);
+
   useEffect(() => {
-    if (params.savedSettings) {
+    if (params.savedSettings && !hasLoadedSettings.current) {
       try {
         const urlSettings = JSON.parse(atob(params.savedSettings));
-        setSettingsForm(urlSettings);
+
         updateStoredSettings(urlSettings);
+        setSettingsForm(urlSettings);
         navigate('/map');
+        hasLoadedSettings.current = true;
+
+
         enqueueSnackbar('Settings loaded from URL!', { variant: 'success' });
       } catch (error) {
         console.error('Failed to load settings from URL:', error);
@@ -199,7 +206,7 @@ function Settings() {
         });
       }
     }
-  }, [enqueueSnackbar, navigate, params.savedSettings, setSettingsForm, updateStoredSettings]);
+  }, [enqueueSnackbar, params.savedSettings, updateStoredSettings]);
 
   return (
     <PageContainer breadcrumbs={[]}>
